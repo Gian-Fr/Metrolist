@@ -7,13 +7,8 @@ package com.metrolist.music.ui.menu
 
 import android.content.Intent
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.metrolist.music.R
@@ -38,111 +33,97 @@ fun RecognitionResultMenu(
         )
     ) {
         // Play on app
-        item {
-            GridMenuItem(
-                icon = R.drawable.play,
-                title = R.string.play_on_app
-            ) {
-                val searchQuery = "${result.title} ${result.artist}"
-                navController.navigate("search/${java.net.URLEncoder.encode(searchQuery, "UTF-8")}")
-                onDismiss()
-            }
+        GridMenuItem(
+            icon = R.drawable.play,
+            title = R.string.play_on_app
+        ) {
+            val searchQuery = "${result.title} ${result.artist}"
+            navController.navigate("search/${java.net.URLEncoder.encode(searchQuery, "UTF-8")}")
+            onDismiss()
         }
         
         // View details
-        item {
-            GridMenuItem(
-                icon = R.drawable.info,
-                title = R.string.details
-            ) {
-                // Show details dialog or navigate to details
-                onDismiss()
-            }
+        GridMenuItem(
+            icon = R.drawable.info,
+            title = R.string.details
+        ) {
+            // Show details dialog or navigate to details
+            onDismiss()
         }
         
         // View lyrics if available
         if (!result.lyrics.isNullOrEmpty()) {
-            item {
-                GridMenuItem(
-                    icon = R.drawable.lyrics,
-                    title = R.string.lyrics
-                ) {
-                    // Show lyrics
-                    onDismiss()
-                }
-            }
-        }
-        
-        // Share
-        item {
             GridMenuItem(
-                icon = R.drawable.share,
-                title = R.string.share
+                icon = R.drawable.lyrics,
+                title = R.string.lyrics
             ) {
-                val shareText = buildString {
-                    append("🎵 ")
-                    append(result.title)
-                    append(" - ")
-                    append(result.artist)
-                    result.album?.let {
-                        append("\n📀 ")
-                        append(it)
-                    }
-                    result.shazamUrl?.let {
-                        append("\n🔗 ")
-                        append(it)
-                    }
-                    append("\n\nRecognized with Metrolist")
-                }
-                
-                val intent = Intent(Intent.ACTION_SEND).apply {
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, shareText)
-                }
-                context.startActivity(Intent.createChooser(intent, null))
+                // Show lyrics
                 onDismiss()
             }
         }
         
+        // Share
+        GridMenuItem(
+            icon = R.drawable.share,
+            title = R.string.share
+        ) {
+            val shareText = buildString {
+                append("🎵 ")
+                append(result.title)
+                append(" - ")
+                append(result.artist)
+                result.album?.let {
+                    append("\n📀 ")
+                    append(it)
+                }
+                result.shazamUrl?.let {
+                    append("\n🔗 ")
+                    append(it)
+                }
+                append("\n\nRecognized with Metrolist")
+            }
+            
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, shareText)
+            }
+            context.startActivity(Intent.createChooser(intent, null))
+            onDismiss()
+        }
+        
         // Open in Shazam if URL available
         result.shazamUrl?.let { url ->
-            item {
-                GridMenuItem(
-                    icon = R.drawable.language,
-                    title = R.string.view_on_shazam
-                ) {
-                    val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))
-                    context.startActivity(intent)
-                    onDismiss()
-                }
+            GridMenuItem(
+                icon = R.drawable.language,
+                title = R.string.view_on_shazam
+            ) {
+                val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))
+                context.startActivity(intent)
+                onDismiss()
             }
         }
         
         // Open in Apple Music if URL available
         result.appleMusicUrl?.let { url ->
-            item {
-                GridMenuItem(
-                    icon = R.drawable.language,
-                    title = R.string.view_on_apple_music
-                ) {
-                    val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))
-                    context.startActivity(intent)
-                    onDismiss()
-                }
+            GridMenuItem(
+                icon = R.drawable.language,
+                title = R.string.view_on_apple_music
+            ) {
+                val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))
+                context.startActivity(intent)
+                onDismiss()
             }
         }
         
         // Open in Spotify if URL available
         result.spotifyUrl?.let { url ->
-            item {
-                GridMenuItem(
-                    icon = R.drawable.language,
-                    title = R.string.view_on_spotify
-                ) {
-                    val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))
-                    context.startActivity(intent)
-                    onDismiss()
-                }
+            GridMenuItem(
+                icon = R.drawable.language,
+                title = R.string.view_on_spotify
+            ) {
+                val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))
+                context.startActivity(intent)
+                onDismiss()
             }
         }
     }
