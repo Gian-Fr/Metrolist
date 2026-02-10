@@ -7,9 +7,6 @@ package com.metrolist.music.ui.screens.recognition
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.media.AudioFormat
-import android.media.AudioRecord
-import android.media.MediaRecorder
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
@@ -125,80 +122,17 @@ fun RecognitionScreen(
         }
     }
     
-    @Suppress("MissingPermission")
     fun startRecognition() {
         if (hasPermission) {
-            recognitionStatus = RecognitionStatus.Listening
-            coroutineScope.launch(Dispatchers.IO) {
-                try {
-                    // Audio recording parameters
-                    val sampleRate = 44100
-                    val channelConfig = AudioFormat.CHANNEL_IN_MONO
-                    val audioFormat = AudioFormat.ENCODING_PCM_16BIT
-                    val bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
-                    val recordingDurationMs = 5000L
-                    
-                    val audioRecord = AudioRecord(
-                        MediaRecorder.AudioSource.MIC,
-                        sampleRate,
-                        channelConfig,
-                        audioFormat,
-                        bufferSize
-                    )
-                    
-                    val audioData = java.io.ByteArrayOutputStream()
-                    val buffer = ByteArray(bufferSize)
-                    val startTime = System.currentTimeMillis()
-                    
-                    audioRecord.startRecording()
-                    
-                    while (System.currentTimeMillis() - startTime < recordingDurationMs) {
-                        val bytesRead = audioRecord.read(buffer, 0, bufferSize)
-                        if (bytesRead > 0) {
-                            audioData.write(buffer, 0, bytesRead)
-                        }
-                    }
-                    
-                    audioRecord.stop()
-                    audioRecord.release()
-                    
-                    kotlinx.coroutines.withContext(Dispatchers.Main) {
-                        recognitionStatus = RecognitionStatus.Processing
-                    }
-                    
-                    // Send to Shazam API for recognition
-                    val result = com.metrolist.shazamkit.Shazam.recognizeFromAudio(audioData.toByteArray())
-                    
-                    kotlinx.coroutines.withContext(Dispatchers.Main) {
-                        result.fold(
-                            onSuccess = { recognitionResult ->
-                                recognitionStatus = RecognitionStatus.Success(recognitionResult)
-                            },
-                            onFailure = { error ->
-                                val message = error.message ?: "Unknown error"
-                                if (message.contains("No match", ignoreCase = true)) {
-                                    recognitionStatus = RecognitionStatus.NoMatch(
-                                        "No matches found. Try again with clearer audio."
-                                    )
-                                } else {
-                                    recognitionStatus = RecognitionStatus.Error(message)
-                                }
-                            }
-                        )
-                    }
-                } catch (e: Exception) {
-                    kotlinx.coroutines.withContext(Dispatchers.Main) {
-                        recognitionStatus = RecognitionStatus.Error(
-                            e.message ?: "Failed to record audio"
-                        )
-                    }
-                }
+            coroutineScope.launch {
+                val result = com.metrolist.music.recognition.MusicRecognitionService.recognize(context)
+                recognitionStatus = result
             }
         } else {
             permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
         }
     }
-    
+
     fun saveToHistory(result: RecognitionResult) {
         coroutineScope.launch(Dispatchers.IO) {
             database.query {
