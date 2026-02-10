@@ -1,0 +1,53 @@
+name: 'Setup FFTW for Android'
+description: 'Build and cache FFTW static libraries for Android ABIs'
+
+inputs:
+  ndk-version:
+    description: 'Android NDK version'
+    required: false
+    default: '27.0.12077973'
+  fftw-version:
+    description: 'FFTW version to build'
+    required: false
+    default: '3.3.10'
+  api-level:
+    description: 'Android API level'
+    required: false
+    default: '26'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Cache FFTW libraries
+      id: cache-fftw
+      uses: actions/cache@v4
+      with:
+        path: app/src/main/cpp/vibrafp/third_party/fftw-android
+        key: fftw-${{ inputs.fftw-version }}-ndk-${{ inputs.ndk-version }}-api-${{ inputs.api-level }}
+
+    - name: Build FFTW for Android
+      if: steps.cache-fftw.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME || format('{0}/ndk/{1}', env.ANDROID_SDK_ROOT, inputs.ndk-version) }}
+        FFTW_VERSION: ${{ inputs.fftw-version }}
+        API: ${{ inputs.api-level }}
+        OUT_BASE: app/src/main/cpp/vibrafp/third_party/fftw-android
+      run: |
+        echo "Building FFTW $FFTW_VERSION for Android (NDK: $ANDROID_NDK_HOME)"
+        cd app/src/main/cpp/vibrafp/third_party
+        chmod +x build-fftw-android.sh
+        ./build-fftw-android.sh --ndk "$ANDROID_NDK_HOME" --out "$GITHUB_WORKSPACE/$OUT_BASE" --version "$FFTW_VERSION" --api "$API"
+        
+    - name: Verify FFTW installation
+      shell: bash
+      run: |
+        echo "FFTW installation:"
+        ls -la app/src/main/cpp/vibrafp/third_party/fftw-android/ || echo "fftw-android directory not found"
+        for abi in arm64-v8a armeabi-v7a x86_64 x86; do
+          if [ -f "app/src/main/cpp/vibrafp/third_party/fftw-android/$abi/lib/libfftw3.a" ]; then
+            echo "✓ $abi: libfftw3.a found"
+          else
+            echo "✗ $abi: libfftw3.a NOT found"
+          fi
+        done
