@@ -36,6 +36,112 @@ data class ShazamRequestJson(
 }
 
 @Serializable
+data class RapidApiShazamResponse(
+    @SerialName("track")
+    val track: RapidApiTrack? = null,
+    @SerialName("matches")
+    val matches: List<Match>? = null
+) {
+    @Serializable
+    data class RapidApiTrack(
+        @SerialName("key")
+        val key: String? = null,
+        @SerialName("title")
+        val title: String? = null,
+        @SerialName("subtitle")
+        val subtitle: String? = null,
+        @SerialName("images")
+        val images: Images? = null,
+        @SerialName("hub")
+        val hub: Hub? = null,
+        @SerialName("url")
+        val url: String? = null,
+        @SerialName("isrc")
+        val isrc: String? = null,
+        @SerialName("genres")
+        val genres: Genres? = null,
+        @SerialName("sections")
+        val sections: List<Section?>? = null
+    ) {
+        @Serializable
+        data class Images(
+            @SerialName("coverart")
+            val coverart: String? = null,
+            @SerialName("coverarthq")
+            val coverarthq: String? = null
+        )
+        
+        @Serializable
+        data class Hub(
+            @SerialName("providers")
+            val providers: List<Provider?>? = null,
+            @SerialName("options")
+            val options: List<Option?>? = null
+        ) {
+            @Serializable
+            data class Provider(
+                @SerialName("caption")
+                val caption: String? = null,
+                @SerialName("actions")
+                val actions: List<Action?>? = null
+            ) {
+                @Serializable
+                data class Action(
+                    @SerialName("uri")
+                    val uri: String? = null
+                )
+            }
+            
+            @Serializable
+            data class Option(
+                @SerialName("providername")
+                val providername: String? = null,
+                @SerialName("actions")
+                val actions: List<Action?>? = null,
+                @SerialName("type")
+                val type: String? = null
+            ) {
+                @Serializable
+                data class Action(
+                    @SerialName("uri")
+                    val uri: String? = null
+                )
+            }
+        }
+        
+        @Serializable
+        data class Genres(
+            @SerialName("primary")
+            val primary: String? = null
+        )
+        
+        @Serializable
+        data class Section(
+            @SerialName("type")
+            val type: String? = null,
+            @SerialName("metadata")
+            val metadata: List<Metadata?>? = null,
+            @SerialName("text")
+            val text: List<String>? = null
+        ) {
+            @Serializable
+            data class Metadata(
+                @SerialName("title")
+                val title: String? = null,
+                @SerialName("text")
+                val text: String? = null
+            )
+        }
+    }
+    
+    @Serializable
+    data class Match(
+        @SerialName("id")
+        val id: String? = null
+    )
+}
+
+@Serializable
 data class ShazamResponseJson(
     @SerialName("matches")
     val matches: List<Match?>? = null,
